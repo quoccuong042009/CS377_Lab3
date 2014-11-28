@@ -66,7 +66,7 @@ public:
     // Move the file pointer to the position on disk where this inode was stored
     // Write out the inode
 
-      printf("%s\n", " create here" );
+    //  printf("%s\n", " create here" );
   } // End Create
 
 
@@ -162,35 +162,37 @@ public:
 
  };
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 std::queue<std::string> instruction;
 
-
-
-
-void executeInstruction( std::queue<std::string> instruction )
- {
-    std::queue<std::string> instruc = instruction;
-    printf("%d\n",instruction.size());
-       
-    	if(instruction.size()==3)
+int main(int argc, char *argv[])
+{
+	char* buf[1024];
+	int i=0;
+	for(i=0;i<1024;i++)
+		buf[i]=0;
+  //printf("Open Disk %s\n",argv[1] );
+  char *diskName = new char[16];
+  diskName = argv[1];
+  //read(diskName);
+   MyFileSystem *filesys;
+  
+  // MyFileSystem filesys;
+ char content[1000];
+ std::ifstream TextFile;
+ TextFile.open("input.txt");
+ int count = 0 ;   // use to count the number of words in command
+ while(TextFile.getline (content,1000))
+  {
+    char *token= std::strtok(content, " ");
+      while (token != NULL) {
+         printf("%s ",token);
+      	  if(token!=NULL)
+      	 instruction.push(token);
+      	token = std::strtok(NULL, " ");
+      }
+      printf("\n");
+      
+      if(instruction.size()==3)
     	{
     	    std::string command = instruction.front();
     	    instruction.pop();
@@ -202,56 +204,41 @@ void executeInstruction( std::queue<std::string> instruction )
     	    char *file = new char[8];
     	   // file = f;
     	   std::strcpy(file, f.c_str());
-
-    	   if(command == "C")
-    	   {
-
-    	   }
+    	    if(command == "C")
+    	    	filesys->create(file,size);
+    	    else if(command=="W")
+    	    	filesys->write(file,size,buf);
+    	    else if (command=="R")
+    	    	filesys->read(file,size,buf);
          }
-   
- }
-
-
-
-
-/*
-read the instruction in file and prepare for execution
-*/
-void read(char diskName[16])
-{
-// MyFileSystem filesys;
- char content[1000];
- std::ifstream TextFile;
- TextFile.open("input.txt");
- int count = 0 ;   // use to count the number of words in command
- while(TextFile.getline (content,1000))
-  {
-  	// count=0;
-    char *token= std::strtok(content, " ");
-      while (token != NULL) {
-         printf("%s ",token);
-      	  if(token!=NULL)
-      	 instruction.push(token);
-      	token = std::strtok(NULL, " ");
-      }
-        executeInstruction(instruction);
-
+         else if(instruction.size()==2)
+         {
+         	instruction.pop();
+         	std::string f = instruction.front();
+    	    instruction.pop();
+    	     char *file = new char[8];
+    	     std::strcpy(file, f.c_str());
+    	     filesys->Delete(file);
+         }
+         else if (instruction.size()==1)
+         {
+         	std::string command = instruction.front();
+    	    instruction.pop();
+         	if(command=="L")
+         		filesys->ls();
+         	else
+         	{
+         		char *c = new char[16];
+    	       std::strcpy(c, command.c_str());
+    	      // MyFileSystem fs(c);
+               filesys = new MyFileSystem(c);
+         	}
+         }
+        
         // clear the queue for next instruction
         while(instruction.size()!=0)
         	instruction.pop();
-      printf("\n");
+     
   }
-}
-
-
-
-int main(int argc, char *argv[])
-{
-  printf("Open Disk %s\n",argv[1] );
-  char *diskName = new char[16];
-  diskName = argv[1];
-  //read(diskName);
-   MyFileSystem filesys(diskName);
- // filesys.ls();
   return 0;
 }
