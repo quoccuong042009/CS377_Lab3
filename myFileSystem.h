@@ -19,4 +19,3 @@ public:
   int write(char name[8], int blockNum, char* buf[1024]);
   
 };
-//
