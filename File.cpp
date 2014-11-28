@@ -1,26 +1,37 @@
 
 
-
+#include <stdio.h>
+#include <unistd.h>
 # include <stdlib.h>
-
 #include <fstream>
 #include <queue> 
 #include <iostream>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 using namespace std;
-
-
-
-
 
 class MyFileSystem
 {
 public:
-  MyFileSystem()
+	int fd;
+  MyFileSystem(char diskName[16])
   {
     // open the file with the above name
     // this file will act as the "disk" for your file system
-    printf("constructor here\n" );
+    printf("Openning Disk %s\n",diskName );
+    if(disk_exist(diskName)){
+     fd = open(diskName,O_WRONLY | O_CREAT | O_TRUNC,  S_IRUSR | S_IWUSR);
+   	 printf("File Exist\n");
+   }
   }
+
+
+  bool disk_exist(const char diskName[16])
+{
+    std::ifstream indisk(diskName);
+    return indisk.good();
+}
 
   int create(char name[8], int size)
   { //create a file with this name and this size
@@ -237,10 +248,10 @@ void read(char diskName[16])
 int main(int argc, char *argv[])
 {
   printf("Open Disk %s\n",argv[1] );
-  //char *diskName = new char[16];
-  //diskName = argv[1];
+  char *diskName = new char[16];
+  diskName = argv[1];
   //read(diskName);
-   MyFileSystem filesys;
+   MyFileSystem filesys(diskName);
  // filesys.ls();
   return 0;
 }
