@@ -9,7 +9,11 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <string.h>
+#include <sstream>
 using namespace std;
+char disk[16];
+fstream *myfile;
 
 class MyFileSystem
 {
@@ -21,8 +25,12 @@ public:
     // this file will act as the "disk" for your file system
     printf("Openning Disk %s\n",diskName );
     if(disk_exist(diskName)){
-     fd = open(diskName,O_WRONLY | O_CREAT | O_TRUNC,  S_IRUSR | S_IWUSR);
-   	 printf("File Exist\n");
+    myfile = new  fstream;
+    myfile->open (diskName, ios::out | ios::app | ios::binary);
+   	printf("File Exist\n");
+   	int i=0;
+   	for(i=0;i<16;i++)
+   		disk[i]=diskName[i];
    }
   }
 
@@ -44,12 +52,82 @@ public:
     // Read the first 128 bytes (the free/in-use block information)
     // Scan the list to make sure you have sufficient free blocks to
     //   allocate a new file of this size
-
+  int sucess =0;
+    char * memblock;
+  int count = size;
+    memblock =  (char *) calloc(128,sizeof(char)); 
+    fstream file (disk, ios::in|ios::out|ios::binary|ios::ate);
+    file.seekg (0,file.beg);
+    file.read (memblock, 128);
+    int i=0;
+    std::queue<int> allocatedblockList;
+    for (i=1 ; i<128 ; i++)
+    {
+     // printf("pass for loop\n" );
+      if(size<=0)      // finish allocate blocks
+        break;
+      if(memblock[i]==0){
+         allocatedblockList.push(i);
+         memblock[i]=1;
+         printf("allicated block\n" );
+         size--;
+       }
+    }
+     if(size==0)
+        sucess=1;
+      else
+      {
+        while(allocatedblockList.size()!=0){
+          memblock[allocatedblockList.front()]=0;
+          allocatedblockList.pop();
+        }
+      }
+    file.seekp (0,file.beg);
+    file.write (memblock, 128);
+   // file.close();
+    
     // Step 2: we look for a free inode on disk
     // Read in an inode
-    // Check the "used" field to see if it is free
-    // If not, repeat the above two steps until you find a free inode
-    // Set the "used" field to 1
+     int index =0;
+   //  int can_create =0;
+     while(index <=15){
+     char *inodeblock =  (char *) calloc(48,sizeof(char)); 
+     file.seekg (128+index*48,file.beg);
+     file.read (inodeblock, 48);
+
+ //    // Check the "used" field to see if it is free
+      if(inodeblock[47]==0){
+      //	can_create=1;
+      inodeblock[47]=1;
+     // copy name to name file
+     for(i=0;i<8;i++)
+      inodeblock[i]=name[i];
+    // copy the size to size file
+     inodeblock[11]=count;
+     int blockindex=12;
+      while(allocatedblockList.size()!=0)
+      {
+        printf("Pass here\n");
+         inodeblock[blockindex]=allocatedblockList.front();
+         blockindex++;
+         allocatedblockList.pop();
+      }
+
+      file.seekp (128+index*48,file.beg);
+      file.write (inodeblock, 48);
+      file.seekg (128+index*48,file.beg);
+      file.read (inodeblock, 48);
+      for(i=0;i<8;i++)
+       printf("%c",inodeblock[i] );
+      	break;
+      }
+      else
+        index++;
+  }
+ //    // If not, repeat the above two steps until you find a free inode
+
+ //    // Set the "used" field to 1
+
     // Copy the filename to the "name" field
     // Copy the file size (in units of blocks) to the "size" field
 
@@ -65,11 +143,10 @@ public:
     // Write out the 128 byte free block list
     // Move the file pointer to the position on disk where this inode was stored
     // Write out the inode
-
-    //  printf("%s\n", " create here" );
+   file.close();  
   } // End Create
 
-
+ 
 
   int Delete(char name[8])
   {
@@ -234,11 +311,10 @@ int main(int argc, char *argv[])
                filesys = new MyFileSystem(c);
          	}
          }
-        
+       
         // clear the queue for next instruction
         while(instruction.size()!=0)
         	instruction.pop();
-     
   }
   return 0;
 }
