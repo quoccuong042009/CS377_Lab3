@@ -69,7 +69,6 @@ public:
       if(memblock[i]==0){
          allocatedblockList.push(i);
          memblock[i]=1;
-         printf("allicated block\n" );
          size--;
        }
     }
@@ -107,7 +106,7 @@ public:
      int blockindex=12;
       while(allocatedblockList.size()!=0)
       {
-        printf("Pass here\n");
+      
          inodeblock[blockindex]=allocatedblockList.front();
          blockindex++;
          allocatedblockList.pop();
@@ -219,12 +218,66 @@ public:
   int write(char name[8], int blockNum, char* buf[1024])
   {
     // write this block to this file
+    blockNum++;
+     int error =0;  // idicate error has occur 
+     std::queue<int> blockList;
+     char * memblock;
+     memblock =  (char *) calloc(128,sizeof(char)); 
+     fstream file (disk, ios::in|ios::out|ios::binary|ios::ate);
+     int index =0;     // index of inode
+     int matchedFileName = -1;
+     int used = 0;
+     int i;
+     int blockIndex=0;
+      while(index <=15&&matchedFileName!=1){
+      	matchedFileName=1;
+     char *inodeblock =  (char *) calloc(48,sizeof(char)); 
+     file.seekg (128+index*48,file.beg);
+     file.read (inodeblock, 48);
+    
+    // check for inode usage
+      if(inodeblock[47]==1)
+      	used=1;
 
-    // Step 1: locate the inode for this file
+     if(used==1)
+     {
+       for(i=0;i<8;i++){
+          if(name[i]!=inodeblock[i])
+          {
+          	matchedFileName=0;
+      	    break;
+
+      	 }
+      	}
+
+        if(matchedFileName==1){         // find the file 
+
+           if(blockNum > inodeblock[11])
+           	    error=1;
+    
+           	  	for(i=0;i<8;i++){
+           	  		if(blockNum = inodeblock[12+i])
+           	  		{
+           	  		  printf("write here\n" );
+           	  	      file.seekp (1024+(inodeblock[12+i]-1)*1024,file.beg);
+           	  	      file.write(*buf,1024);
+           	           break;
+           	  		}
+               }
+               
+
+           	  
+       }
+      
+      }
+      index++;
+  }
+
+    // Step 1: locate the inode for this file   done
     // Move file pointer to the position of the 1st inode (129th byte)
-    // Read in a inode
-    // If the inode is in use, compare the "name" field with the above file
-    // If the file names don't match, repeat
+    // Read in a inode                       done
+    // If the inode is in use, compare the "name" field with the above file   done
+    // If the file names don't match, repeat    done
 
     // Step 2: Write to the specified block
     // Check that blockNum < inode.size, else flag an error
@@ -258,6 +311,15 @@ int main(int argc, char *argv[])
  std::ifstream TextFile;
  TextFile.open("input.txt");
  int count = 0 ;   // use to count the number of words in command
+   
+  
+  
+  char *buffer="These techniques have been thoroughly tested and researched by the Shiba Inu Training Institute - so, after reading the mini course, we absolutely guarantee that you will be well on your way to having a loving, well-trained and perfectly obedient Shiba Inu!";
+   for (i=0;i<strlen(buffer);i++){
+   	 buf[i]=&buffer[i];
+   	 printf("%c\n",*buf[i] );
+   }
+
  while(TextFile.getline (content,1000))
   {
     char *token= std::strtok(content, " ");
