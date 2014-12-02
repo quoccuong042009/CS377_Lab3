@@ -66,8 +66,10 @@ public:
      // printf("pass for loop\n" );
       if(size<=0)      // finish allocate blocks
         break;
+
       if(memblock[i]==0){
          allocatedblockList.push(i);
+         printf("allocated block %d\n",i );
          memblock[i]=1;
          size--;
        }
@@ -76,6 +78,7 @@ public:
         sucess=1;
       else
       {
+      	printf("Not enough space , return all block \n");
         while(allocatedblockList.size()!=0){
           memblock[allocatedblockList.front()]=0;
           allocatedblockList.pop();
@@ -96,6 +99,7 @@ public:
 
  //    // Check the "used" field to see if it is free
       if(inodeblock[47]==0){
+      	printf("inode %d is free \n", index+1 );
       //	can_create=1;
       inodeblock[47]=1;
      // copy name to name file
@@ -116,8 +120,10 @@ public:
       file.write (inodeblock, 48);
       file.seekg (128+index*48,file.beg);
       file.read (inodeblock, 48);
-      for(i=0;i<8;i++)
-       printf("%c",inodeblock[i] );
+      printf("Modified inode\n");
+      printf("Create file sucessfully\n\n\n");
+     // for(i=0;i<8;i++)
+      // printf("%c",inodeblock[i] );
       	break;
       }
       else
@@ -178,10 +184,38 @@ public:
   } // End Delete
 
 
-  int ls()
+ int ls()
   { 
     // List names of all files on disk
 
+    // Step 1: read in each inode and print
+    // Move file pointer to the position of the 1st inode (129th byte)
+    // for(i=0;i<16;i++)
+      // Read in an inode
+      // If the inode is in-use
+        // print the "name" and "size" fields from the inode
+    // end for
+      // List names of all files on disk
+	 fstream file (disk, ios::in|ios::out|ios::binary|ios::ate);
+	 //printf("I am inside the LS now");
+	 int index = 0;
+	 while(index <=15){
+     char *inodeblock =  (char *) calloc(48,sizeof(char)); 
+     file.seekg (128+index*48,file.beg);
+     file.read (inodeblock, 48);
+     //printf("\nCheck if the inode is in-use   ");
+     
+     if(inodeblock[47] == 1){  // check the inode is being use or not 
+     for(int n = 0; n < 8; n++)
+     printf("%c",inodeblock[n]);
+     }
+     index++;
+     printf("  Size of the inode ");
+     printf("%d",inodeblock[11]); // print out the size of the inode block 
+     printf("\n");
+     
+     }
+	  
     // Step 1: read in each inode and print
     // Move file pointer to the position of the 1st inode (129th byte)
     // for(i=0;i<16;i++)
@@ -212,7 +246,7 @@ public:
      int blockIndex=0;
      int complete =0;
       while(index <=15&&matchedFileName!=1&&complete!=1){
-      	printf("check node %d \n",index+1 );
+      	printf("check inode %d \n",index+1 );
       	matchedFileName=1;
      char *inodeblock =  (char *) calloc(48,sizeof(char)); 
      file.seekg (128+index*48,file.beg);
@@ -276,6 +310,7 @@ public:
     //   into the buffer "buf"
 
   }
+  file.close();
   } // End read
 
 
@@ -338,7 +373,7 @@ public:
       }
       index++;
   }
-
+     file.close();
     // Step 1: locate the inode for this file   done
     // Move file pointer to the position of the 1st inode (129th byte)
     // Read in a inode                       done
