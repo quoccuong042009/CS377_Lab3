@@ -194,6 +194,69 @@ public:
 
   int read(char name[8], int blockNum, char* buf[1024])
   {
+
+  	 // write this block to this file
+    blockNum++;
+     int error =0;  // idicate error has occur 
+     std::queue<int> blockList;
+     char * memblock;
+     memblock =  (char *) calloc(128,sizeof(char)); 
+      char * readbuf = (char *) calloc(1024,sizeof(char));
+    //  for(int i=0;i<1024;i++)
+      //	   readbuf[i]=0;
+     fstream file (disk, ios::in|ios::out|ios::binary|ios::ate);
+     int index =0;     // index of inode
+     int matchedFileName = -1;
+     int used = 0;
+     int i;
+     int blockIndex=0;
+     int complete =0;
+      while(index <=15&&matchedFileName!=1&&complete!=1){
+      	printf("check node %d \n",index+1 );
+      	matchedFileName=1;
+     char *inodeblock =  (char *) calloc(48,sizeof(char)); 
+     file.seekg (128+index*48,file.beg);
+     file.read (inodeblock, 48);
+    
+    // check for inode usage
+      if(inodeblock[47]==1)
+      	used=1;
+    printf("check used : status =  %d \n",used );
+     if(used==1)
+     {
+       for(i=0;i<8;i++){
+          if(name[i]!=inodeblock[i])
+          {
+          	matchedFileName=0;
+      	    break;
+
+      	 }
+      	}
+    printf("File Match = %d\n", matchedFileName );
+        if(matchedFileName==1){         // find the file 
+           	  	for(i=0;i<8;i++){
+           	  		if(blockNum = inodeblock[12+i])
+           	  		{
+           	  		  printf("read here\n" );
+           	  	      file.seekg (1024+(inodeblock[12+i]-1)*1024,file.beg);
+           	  	      file.read(readbuf,1024);
+           	  	      complete=1;
+           	           break;
+           	  		}
+               }
+               
+
+           	  
+       }
+      
+      }
+      if(complete==1){
+       for(int i=0;i<257;i++)
+       	 printf("%c",readbuf[i] );
+       	printf("\n");
+       	printf("read completed\n\n\n" );
+       }
+      index++;
     // read this block from this file
 
     // Step 1: locate the inode for this file
@@ -212,12 +275,14 @@ public:
     // Read in the block => Read in 1024 bytes from this location
     //   into the buffer "buf"
 
+  }
   } // End read
 
 
   int write(char name[8], int blockNum, char* buf[1024])
   {
     // write this block to this file
+    int complete=0;
     blockNum++;
      int error =0;  // idicate error has occur 
      std::queue<int> blockList;
@@ -229,7 +294,8 @@ public:
      int used = 0;
      int i;
      int blockIndex=0;
-      while(index <=15&&matchedFileName!=1){
+      while(index <=15&&matchedFileName!=1&&complete!=1){
+      	printf("check node %d \n",index+1 );
       	matchedFileName=1;
      char *inodeblock =  (char *) calloc(48,sizeof(char)); 
      file.seekg (128+index*48,file.beg);
@@ -238,6 +304,7 @@ public:
     // check for inode usage
       if(inodeblock[47]==1)
       	used=1;
+      printf("check used : status =  %d \n",used );
 
      if(used==1)
      {
@@ -250,17 +317,16 @@ public:
       	 }
       	}
 
+        printf("File Match = %d\n", matchedFileName );
         if(matchedFileName==1){         // find the file 
-
-           if(blockNum > inodeblock[11])
-           	    error=1;
     
            	  	for(i=0;i<8;i++){
            	  		if(blockNum = inodeblock[12+i])
            	  		{
-           	  		  printf("write here\n" );
            	  	      file.seekp (1024+(inodeblock[12+i]-1)*1024,file.beg);
            	  	      file.write(*buf,1024);
+           	  	      printf("write completed\n\n\n" );
+           	  	      complete=1;
            	           break;
            	  		}
                }
@@ -315,10 +381,9 @@ int main(int argc, char *argv[])
   
   
   char *buffer="These techniques have been thoroughly tested and researched by the Shiba Inu Training Institute - so, after reading the mini course, we absolutely guarantee that you will be well on your way to having a loving, well-trained and perfectly obedient Shiba Inu!";
-   for (i=0;i<strlen(buffer);i++){
+   for (i=0;i<strlen(buffer);i++)
    	 buf[i]=&buffer[i];
-   	 printf("%c\n",*buf[i] );
-   }
+   
 
  while(TextFile.getline (content,1000))
   {
