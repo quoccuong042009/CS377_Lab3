@@ -91,14 +91,14 @@ public:
     // Step 2: we look for a free inode on disk
     // Read in an inode
      int index =0;
-   //  int can_create =0;
-     while(index <=15){
+   
+     while(index <=15){     // read each inode
      char *inodeblock =  (char *) calloc(48,sizeof(char)); 
      file.seekg (128+index*48,file.beg);
-     file.read (inodeblock, 48);
+     file.read (inodeblock, 48);   // read the inode
 
- //    // Check the "used" field to see if it is free
-      if(inodeblock[47]==0){
+     
+      if(inodeblock[47]==0){            // Check the "used" field to see if it is free
       	printf("inode %d is free \n", index+1 );
       //	can_create=1;
       inodeblock[47]=1;
@@ -108,7 +108,7 @@ public:
     // copy the size to size file
      inodeblock[11]=count;
      int blockindex=12;
-      while(allocatedblockList.size()!=0)
+      while(allocatedblockList.size()!=0)   // put the bloacks information in the inode
       {
       
          inodeblock[blockindex]=allocatedblockList.front();
@@ -117,9 +117,8 @@ public:
       }
 
       file.seekp (128+index*48,file.beg);
-      file.write (inodeblock, 48);
-      file.seekg (128+index*48,file.beg);
-      file.read (inodeblock, 48);
+      file.write (inodeblock, 48);           // write the inode into disk
+     
       printf("Modified inode\n");
       printf("Create file sucessfully\n\n\n");
      // for(i=0;i<8;i++)
@@ -208,12 +207,13 @@ public:
      if(inodeblock[47] == 1){  // check the inode is being use or not 
      for(int n = 0; n < 8; n++)
      printf("%c",inodeblock[n]);
-     }
-     index++;
+     
+     
      printf("  Size of the inode ");
      printf("%d",inodeblock[11]); // print out the size of the inode block 
      printf("\n");
-     
+     }
+     index++;
      }
 	  
     // Step 1: read in each inode and print
