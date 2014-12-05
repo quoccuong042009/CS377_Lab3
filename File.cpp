@@ -1,5 +1,5 @@
 
-
+#include <cstring>
 #include <stdio.h>
 #include <unistd.h>
 # include <stdlib.h>
@@ -18,7 +18,7 @@ fstream *myfile;
 class MyFileSystem
 {
 public:
-	int fd;
+  int fd;
   MyFileSystem(char diskName[16])
   {
     // open the file with the above name
@@ -27,10 +27,10 @@ public:
     if(disk_exist(diskName)){
     myfile = new  fstream;
     myfile->open (diskName, ios::out | ios::app | ios::binary);
-   	printf("File Exist\n");
-   	int i=0;
-   	for(i=0;i<16;i++)
-   		disk[i]=diskName[i];
+    printf("File Exist\n");
+    int i=0;
+    for(i=0;i<16;i++)
+      disk[i]=diskName[i];
    }
   }
 
@@ -78,7 +78,7 @@ public:
         sucess=1;
       else
       {
-      	printf("Not enough space , return all block \n");
+        printf("Not enough space , return all block \n");
         while(allocatedblockList.size()!=0){
           memblock[allocatedblockList.front()]=0;
           allocatedblockList.pop();
@@ -99,8 +99,8 @@ public:
 
      
       if(inodeblock[47]==0){            // Check the "used" field to see if it is free
-      	printf("inode %d is free \n", index+1 );
-      //	can_create=1;
+        printf("inode %d is free \n", index+1 );
+      //  can_create=1;
       inodeblock[47]=1;
      // copy name to name file
      for(i=0;i<8;i++)
@@ -123,7 +123,7 @@ public:
       printf("Create file sucessfully\n\n\n");
      // for(i=0;i<8;i++)
       // printf("%c",inodeblock[i] );
-      	break;
+        break;
       }
       else
         index++;
@@ -255,10 +255,10 @@ public:
         // print the "name" and "size" fields from the inode
     // end for
       // List names of all files on disk
-	 fstream file (disk, ios::in|ios::out|ios::binary|ios::ate);
-	 //printf("I am inside the LS now");
-	 int index = 0;
-	 while(index <=15){
+   fstream file (disk, ios::in|ios::out|ios::binary|ios::ate);
+   //printf("I am inside the LS now");
+   int index = 0;
+   while(index <=15){
      char *inodeblock =  (char *) calloc(48,sizeof(char)); 
      file.seekg (128+index*48,file.beg);
      file.read (inodeblock, 48);
@@ -275,7 +275,7 @@ public:
      }
      index++;
      }
-	  
+    
     // Step 1: read in each inode and print
     // Move file pointer to the position of the 1st inode (129th byte)
     // for(i=0;i<16;i++)
@@ -289,7 +289,7 @@ public:
   int read(char name[8], int blockNum, char* buf[1024])
   {
 
-  	 // write this block to this file
+     // write this block to this file
     blockNum++;
      int error =0;  // idicate error has occur 
      std::queue<int> blockList;
@@ -297,7 +297,7 @@ public:
      memblock =  (char *) calloc(128,sizeof(char)); 
       char * readbuf = (char *) calloc(1024,sizeof(char));
     //  for(int i=0;i<1024;i++)
-      //	   readbuf[i]=0;
+      //     readbuf[i]=0;
      fstream file (disk, ios::in|ios::out|ios::binary|ios::ate);
      int index =0;     // index of inode
      int matchedFileName = -1;
@@ -306,49 +306,49 @@ public:
      int blockIndex=0;
      int complete =0;
       while(index <=15&&matchedFileName!=1&&complete!=1){
-      	printf("check inode %d \n",index+1 );
-      	matchedFileName=1;
+        printf("check inode %d \n",index+1 );
+        matchedFileName=1;
      char *inodeblock =  (char *) calloc(48,sizeof(char)); 
      file.seekg (128+index*48,file.beg);
      file.read (inodeblock, 48);
     
     // check for inode usage
       if(inodeblock[47]==1)
-      	used=1;
+        used=1;
     printf("check used : status =  %d \n",used );
      if(used==1)
      {
        for(i=0;i<8;i++){
           if(name[i]!=inodeblock[i])
           {
-          	matchedFileName=0;
-      	    break;
+            matchedFileName=0;
+            break;
 
-      	 }
-      	}
+         }
+        }
     printf("File Match = %d\n", matchedFileName );
         if(matchedFileName==1){         // find the file 
-           	  	for(i=0;i<8;i++){
-           	  		if(blockNum == inodeblock[12+i])
-           	  		{
-           	  		  printf("read here\n" );
-           	  	      file.seekg (1024+(inodeblock[12+i]-1)*1024,file.beg);
-           	  	      file.read(readbuf,1024);
-           	  	      complete=1;
-           	           break;
-           	  		}
+                for(i=0;i<8;i++){
+                  if(blockNum == inodeblock[12+i])
+                  {
+                    printf("read here\n" );
+                      file.seekg (1024+(inodeblock[12+i]-1)*1024,file.beg);
+                      file.read(readbuf,1024);
+                      complete=1;
+                       break;
+                  }
                }
                
 
-           	  
+              
        }
       
       }
       if(complete==1){
        for(int i=0;i<257;i++)
-       	 printf("%c",readbuf[i] );
-       	printf("\n");
-       	printf("read completed\n\n\n" );
+         printf("%c",readbuf[i] );
+        printf("\n");
+        printf("read completed\n\n\n" );
        }
        else
         printf("Read Fail\n");
@@ -393,15 +393,15 @@ public:
      int i;
      int blockIndex=0;
       while(index <=15&&matchedFileName!=1&&complete!=1){
-      	printf("check node %d \n",index+1 );
-      	matchedFileName=1;
+        printf("check node %d \n",index+1 );
+        matchedFileName=1;
      char *inodeblock =  (char *) calloc(48,sizeof(char)); 
      file.seekg (128+index*48,file.beg);
      file.read (inodeblock, 48);
     
     // check for inode usage
       if(inodeblock[47]==1)
-      	used=1;
+        used=1;
       printf("check used : status =  %d \n",used );
 
      if(used==1)
@@ -409,26 +409,26 @@ public:
        for(i=0;i<8;i++){
           if(name[i]!=inodeblock[i])
           {
-          	matchedFileName=0;
-      	    break;
+            matchedFileName=0;
+            break;
 
-      	 }
-      	}
+         }
+        }
 
         printf("File Match = %d\n", matchedFileName );
         if(matchedFileName==1){         // find the file 
 
           int p =0;
     
-           	  	for(i=0;i<8;i++){
-           	  		if(blockNum == inodeblock[12+i])
-           	  		{
-           	  	      file.seekp (1024+(inodeblock[12+i]-1)*1024,file.beg);
-           	  	      file.write(*buf,1024);
-           	  	      printf("write completed\n\n\n" );
-           	  	      complete=1;
-           	           break;
-           	  		}
+                for(i=0;i<8;i++){
+                  if(blockNum == inodeblock[12+i])
+                  {
+                      file.seekp (1024+(inodeblock[12+i]-1)*1024,file.beg);
+                      file.write(*buf,1024);
+                      printf("write completed\n\n\n" );
+                      complete=1;
+                       break;
+                  }
                   else
                   {
                      if(p==0){
@@ -439,7 +439,7 @@ public:
                }
                
 
-           	  
+              
        }
       
       }
@@ -469,10 +469,10 @@ std::queue<std::string> instruction;
 
 int main(int argc, char *argv[])
 {
-	char* buf[1024];
-	int i=0;
-	for(i=0;i<1024;i++)
-		buf[i]=0;
+  char* buf[1024];
+  int i=0;
+  for(i=0;i<1024;i++)
+    buf[i]=0;
   //printf("Open Disk %s\n",argv[1] );
   char *diskName = new char[16];
   diskName = argv[1];
@@ -489,7 +489,7 @@ int main(int argc, char *argv[])
   
   char *buffer="These techniques have been thoroughly tested and researched by the Shiba Inu Training Institute - so, after reading the mini course, we absolutely guarantee that you will be well on your way to having a loving, well-trained and perfectly obedient Shiba Inu!";
    for (i=0;i<strlen(buffer);i++)
-   	 buf[i]=&buffer[i];
+     buf[i]=&buffer[i];
    
 
  while(TextFile.getline (content,1000))
@@ -497,58 +497,61 @@ int main(int argc, char *argv[])
     char *token= std::strtok(content, " ");
       while (token != NULL) {
          printf("%s ",token);
-      	  if(token!=NULL)
-      	 instruction.push(token);
-      	token = std::strtok(NULL, " ");
+          if(token!=NULL)
+         instruction.push(token);
+        token = std::strtok(NULL, " ");
       }
       printf("\n");
       
       if(instruction.size()==3)
-    	{
-    	    std::string command = instruction.front();
-    	    instruction.pop();
-    	    std::string f = instruction.front();
-    	    instruction.pop();
-    	    std::string s = instruction.front();
-    	    instruction.pop();
-    	    int size = std::stoi (s);
-    	    char *file = new char[8];
-    	   // file = f;
-    	   std::strcpy(file, f.c_str());
-    	    if(command == "C")
-    	    	filesys->create(file,size);
-    	    else if(command=="W")
-    	    	filesys->write(file,size,buf);
-    	    else if (command=="R")
-    	    	filesys->read(file,size,buf);
+      {
+          std::string command = instruction.front();
+          instruction.pop();
+          std::string f = instruction.front();
+          instruction.pop();
+          std::string s = instruction.front();
+          instruction.pop();
+        istringstream buffer(s); 
+        int size;
+        buffer >> size;   
+         // int size = s;
+          char *file = new char[8];
+         // file = f;
+         std::strcpy(file, f.c_str());
+          if(command == "C")
+            filesys->create(file,size);
+          else if(command=="W")
+            filesys->write(file,size,buf);
+          else if (command=="R")
+            filesys->read(file,size,buf);
          }
          else if(instruction.size()==2)
          {
-         	instruction.pop();
-         	std::string f = instruction.front();
-    	    instruction.pop();
-    	     char *file = new char[8];
-    	     std::strcpy(file, f.c_str());
-    	     filesys->Delete(file);
+          instruction.pop();
+          std::string f = instruction.front();
+          instruction.pop();
+           char *file = new char[8];
+           std::strcpy(file, f.c_str());
+           filesys->Delete(file);
          }
          else if (instruction.size()==1)
          {
-         	std::string command = instruction.front();
-    	    instruction.pop();
-         	if(command=="L")
-         		filesys->ls();
-         	else
-         	{
-         		char *c = new char[16];
-    	       std::strcpy(c, command.c_str());
-    	      // MyFileSystem fs(c);
+          std::string command = instruction.front();
+          instruction.pop();
+          if(command=="L")
+            filesys->ls();
+          else
+          {
+            char *c = new char[16];
+             std::strcpy(c, command.c_str());
+            // MyFileSystem fs(c);
                filesys = new MyFileSystem(c);
-         	}
+          }
          }
        
         // clear the queue for next instruction
         while(instruction.size()!=0)
-        	instruction.pop();
+          instruction.pop();
   }
   return 0;
 }
