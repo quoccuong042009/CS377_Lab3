@@ -180,6 +180,66 @@ public:
     // Move the file pointer to the position on disk where this inode was stored
     // Write out the inode
 
+     // Delete the file with this name
+
+    // Step 1: Locate the inode for this file
+    // Move the file pointer to the 1st inode (129th byte)
+    // Read in an inode
+    // If the inode is free, repeat above step.
+    // If the inode is in use, check if the "name" field in the
+    //   inode matches the file we want to delete. If not, read the next
+    //   inode and repeat
+    fstream file (disk, ios::in|ios::out|ios::binary|ios::ate);
+    int index = 0;
+    std::queue<int> blockList;
+   while(index <=15){
+     char *inodeblock =  (char *) calloc(48,sizeof(char)); 
+     file.seekg (128+index*48,file.beg);
+     file.read (inodeblock, 48);
+
+     int count = 0;
+     if(inodeblock[47] == 1){  // check the inode is being use or not 
+      for(int n = 0; n < 8; n++)
+      if(name[n]==inodeblock[n]){
+       count++;
+       //printf("I am insideside the count now%d",count);
+      }
+      
+      if(count==8){
+
+        for(int n = 12; n < 20; n++){
+        if(inodeblock[n] != 0)
+         blockList.push(inodeblock[n]);
+         }
+       char *newblock =  (char *) calloc(128,sizeof(char)); 
+        file.seekg (0,file.beg);
+        file.read (newblock, 128);
+      while(blockList.size()!=0)
+      {
+         int i= blockList.front();
+         blockList.pop();
+         newblock[i] = 0;
+      }
+
+       file.seekp (0,file.beg);
+        file.write (newblock, 128);
+
+        //change the inode for super block. 
+        char *newinodeblock =  (char *) calloc(48,sizeof(char)); 
+      for(int k = 0; k < 48; k++){
+          newinodeblock[k] = 0;
+          }  // Free the inode block 
+         file.seekp (128+index*48,file.beg);
+         file.write (newinodeblock, 48);  
+      }
+      
+     }
+     //printf("%d",inodeblock[11]); // print out the size of the inode block 
+     index++;
+     }
+     printf("Delete Complete\n");
+     printf("\n");
+
   } // End Delete
 
 
@@ -269,7 +329,7 @@ public:
     printf("File Match = %d\n", matchedFileName );
         if(matchedFileName==1){         // find the file 
            	  	for(i=0;i<8;i++){
-           	  		if(blockNum = inodeblock[12+i])
+           	  		if(blockNum == inodeblock[12+i])
            	  		{
            	  		  printf("read here\n" );
            	  	      file.seekg (1024+(inodeblock[12+i]-1)*1024,file.beg);
@@ -290,6 +350,8 @@ public:
        	printf("\n");
        	printf("read completed\n\n\n" );
        }
+       else
+        printf("Read Fail\n");
       index++;
     // read this block from this file
 
@@ -311,6 +373,7 @@ public:
 
   }
   file.close();
+  printf("\n" );
   } // End read
 
 
@@ -354,9 +417,11 @@ public:
 
         printf("File Match = %d\n", matchedFileName );
         if(matchedFileName==1){         // find the file 
+
+          int p =0;
     
            	  	for(i=0;i<8;i++){
-           	  		if(blockNum = inodeblock[12+i])
+           	  		if(blockNum == inodeblock[12+i])
            	  		{
            	  	      file.seekp (1024+(inodeblock[12+i]-1)*1024,file.beg);
            	  	      file.write(*buf,1024);
@@ -364,6 +429,13 @@ public:
            	  	      complete=1;
            	           break;
            	  		}
+                  else
+                  {
+                     if(p==0){
+                    printf("Write Fail\n");
+                     p=1;
+                  }
+                  }
                }
                
 
@@ -388,7 +460,7 @@ public:
 
     // Write the block! => Write 1024 bytes from the buffer "buff" to 
     //   this location
-
+    printf("\n" );
   } // end write
 
  };
